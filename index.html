@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cluer</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css" />
+  <style>
+
+  </style>
+<script src="cluer.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/x2js/1.2.0/xml2json.min.js" integrity="sha512-HX+/SvM7094YZEKOCtG9EyjRYvK8dKlFhdYAnVCGNxMkA59BZNSZTZrqdDlLXp0O6/NjDb1uKnmutUeuzHb3iQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+    <body>
+      <div class="container">
+        <h2>Cluer</h2>
+            <div class="row">
+              <div class="twelve columns">
+                <label for="files">Select a .cfp file to clue</label>
+                <input class="button-primary" type="file" id="files" name="files" accept=".cfp" />
+              </div> <!-- end twelve -->
+            </div> <!-- end row -->
+    </div> <!-- end container -->
+
+
+      <script type="text/javascript">
+        /** Handling form submission **/
+        function handleFileSelect(evt) {
+            const files = evt.target.files; // FileList object
+
+            // files is a FileList of File objects.
+            for (let i = 0, f; f = files[i]; i++) {
+                if (f) {
+                    const r = new FileReader();
+                    r.onload = (function (theFile) {
+                        return function (e) {
+                            let contents = e.target.result;
+                            // Parse the CFP file into a JS object
+                            var x2js = new X2JS();
+                            var cfp_obj = x2js.xml_str2json( contents );
+
+                            // Extract the entries from the grid
+                            var solution_str = cfp_obj.CROSSFIRE.GRID.__text;
+                            var entries = entriesFromGrid(solution_str);
+
+                            /* Extract the clues */
+                            var clues = cfp_obj.CROSSFIRE.WORDS.WORD;
+                            for (var i=0; i < entries.length; i++) {
+                                console.log(entries[i]);
+                                console.log(clues[i].__text);
+                            }
+
+                            // This is how we write back to CFP
+                            var xml2 = x2js.json2xml_str( cfp_obj );
+                            //console.log(xml2);
+                        };
+                    })(f);
+                    r.readAsBinaryString(f);
+                } else {
+                    alert("Failed to load file");
+                }
+            }
+        }
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+      </script>
+
+    </body>
+</html>
